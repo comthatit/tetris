@@ -144,7 +144,7 @@ def main():
 
     st.write(f"Score: {st.session_state.score}")
 
-    key_event = st.experimental_get_query_params().get("key", [None])[0]
+    key_event = st.query_params.get("key", [None])[0]
     if key_event:
         handle_keypress(key_event)
 
