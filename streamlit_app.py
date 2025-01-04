@@ -41,6 +41,10 @@ def valid_move(grid, shape, offset):
                     return False
     return True
 
+# Rotate shape
+def rotate_shape(shape):
+    return [list(row) for row in zip(*shape[::-1])]
+
 # Place shape on the grid
 def place_shape(grid, shape, offset):
     off_x, off_y = offset
@@ -79,6 +83,7 @@ def main():
         - **Move Left**: Press the Left Arrow key.
         - **Move Down**: Press the Down Arrow key.
         - **Move Right**: Press the Right Arrow key.
+        - **Rotate**: Press the Up Arrow key.
         """
     )
 
@@ -116,6 +121,10 @@ def main():
             new_position = [current_position[0], current_position[1] + 1]
             if valid_move(grid, current_piece, new_position):
                 st.session_state.current_position = new_position
+        elif key == "ArrowUp":
+            rotated_piece = rotate_shape(current_piece)
+            if valid_move(grid, rotated_piece, current_position):
+                st.session_state.current_piece = rotated_piece
         elif key == "Space":
             st.session_state.game_started = True
 
