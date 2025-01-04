@@ -1,5 +1,6 @@
 import streamlit as st
 import random
+from streamlit.components.v1 import html
 
 # Constants
 SCREEN_WIDTH = 300
@@ -74,11 +75,10 @@ def main():
     st.markdown(
         """
         ### How to Play
-        - **Start**: Press any control button (Left, Down, Right) to start the game.
-        - **Move Left**: Press the "Left" button.
-        - **Move Down**: Press the "Down" button to speed up the block's fall.
-        - **Move Right**: Press the "Right" button.
-        - **Rotate**: Currently, rotation is not implemented. Future updates may include this feature.
+        - **Start**: Press the Spacebar to start the game.
+        - **Move Left**: Press the Left Arrow key.
+        - **Move Down**: Press the Down Arrow key.
+        - **Move Right**: Press the Right Arrow key.
         """
     )
 
@@ -90,31 +90,19 @@ def main():
         st.session_state.current_position = [0, COLS // 2 - len(st.session_state.current_piece[0]) // 2]
     if "score" not in st.session_state:
         st.session_state.score = 0
+    if "game_started" not in st.session_state:
+        st.session_state.game_started = False
 
-    # Game logic
-    grid = st.session_state.grid
-    current_piece = st.session_state.current_piece
-    current_position = st.session_state.current_position
+    def handle_keypress(key):
+        grid = st.session_state.grid
+        current_piece = st.session_state.current_piece
+        current_position = st.session_state.current_position
 
-    # Render grid
-    temp_grid = [row[:] for row in grid]
-    for y, row in enumerate(current_piece):
-        for x, cell in enumerate(row):
-            if cell:
-                temp_grid[current_position[0] + y][current_position[1] + x] = cell
-
-    st.markdown(draw_grid(temp_grid), unsafe_allow_html=True)
-
-    # Controls
-    st.write("**Controls:**")
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
-        if st.button("Left"):
+        if key == "ArrowLeft":
             new_position = [current_position[0], current_position[1] - 1]
             if valid_move(grid, current_piece, new_position):
                 st.session_state.current_position = new_position
-    with col2:
-        if st.button("Down"):
+        elif key == "ArrowDown":
             new_position = [current_position[0] + 1, current_position[1]]
             if valid_move(grid, current_piece, new_position):
                 st.session_state.current_position = new_position
@@ -124,13 +112,41 @@ def main():
                 st.session_state.score += cleared * 10
                 st.session_state.current_piece = random.choice(SHAPES)
                 st.session_state.current_position = [0, COLS // 2 - len(st.session_state.current_piece[0]) // 2]
-    with col3:
-        if st.button("Right"):
+        elif key == "ArrowRight":
             new_position = [current_position[0], current_position[1] + 1]
             if valid_move(grid, current_piece, new_position):
                 st.session_state.current_position = new_position
+        elif key == "Space":
+            st.session_state.game_started = True
+
+    # Render grid
+    temp_grid = [row[:] for row in st.session_state.grid]
+    if st.session_state.game_started:
+        for y, row in enumerate(st.session_state.current_piece):
+            for x, cell in enumerate(row):
+                if cell:
+                    temp_grid[st.session_state.current_position[0] + y][st.session_state.current_position[1] + x] = cell
+
+    st.markdown(draw_grid(temp_grid), unsafe_allow_html=True)
+
+    html(
+        """
+        <script>
+        document.addEventListener('keydown', function(event) {
+            var key = event.key;
+            var parent = window.parent;
+            parent.postMessage({key: key}, '*');
+        });
+        </script>
+        """,
+        height=0,
+    )
 
     st.write(f"Score: {st.session_state.score}")
+
+    key_event = st.experimental_get_query_params().get("key", [None])[0]
+    if key_event:
+        handle_keypress(key_event)
 
 if __name__ == "__main__":
     main()
