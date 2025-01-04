@@ -71,6 +71,17 @@ def draw_grid(grid):
 def main():
     st.title("Tetris Game")
 
+    st.markdown(
+        """
+        ### How to Play
+        - **Start**: Press any control button (Left, Down, Right) to start the game.
+        - **Move Left**: Click the "Left" button.
+        - **Move Down**: Click the "Down" button to speed up the block's fall.
+        - **Move Right**: Click the "Right" button.
+        - **Rotate**: Currently, rotation is not implemented. Future updates may include this feature.
+        """
+    )
+
     if "grid" not in st.session_state:
         st.session_state.grid = create_grid()
     if "current_piece" not in st.session_state:
