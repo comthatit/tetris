@@ -1,6 +1,5 @@
 import streamlit as st
 import random
-from streamlit.components.v1 import html
 
 # Constants
 SCREEN_WIDTH = 300
@@ -79,7 +78,7 @@ def main():
     st.markdown(
         """
         ### How to Play
-        - **Start**: Press the Spacebar to start the game.
+        - **Start**: Press the "Start Game" button to begin.
         - **Move Left**: Press the Left Arrow key.
         - **Move Down**: Press the Down Arrow key.
         - **Move Right**: Press the Right Arrow key.
@@ -98,35 +97,9 @@ def main():
     if "game_started" not in st.session_state:
         st.session_state.game_started = False
 
-    def handle_keypress(key):
-        grid = st.session_state.grid
-        current_piece = st.session_state.current_piece
-        current_position = st.session_state.current_position
-
-        if key == "ArrowLeft":
-            new_position = [current_position[0], current_position[1] - 1]
-            if valid_move(grid, current_piece, new_position):
-                st.session_state.current_position = new_position
-        elif key == "ArrowDown":
-            new_position = [current_position[0] + 1, current_position[1]]
-            if valid_move(grid, current_piece, new_position):
-                st.session_state.current_position = new_position
-            else:
-                place_shape(grid, current_piece, current_position)
-                st.session_state.grid, cleared = clear_rows(grid)
-                st.session_state.score += cleared * 10
-                st.session_state.current_piece = random.choice(SHAPES)
-                st.session_state.current_position = [0, COLS // 2 - len(st.session_state.current_piece[0]) // 2]
-        elif key == "ArrowRight":
-            new_position = [current_position[0], current_position[1] + 1]
-            if valid_move(grid, current_piece, new_position):
-                st.session_state.current_position = new_position
-        elif key == "ArrowUp":
-            rotated_piece = rotate_shape(current_piece)
-            if valid_move(grid, rotated_piece, current_position):
-                st.session_state.current_piece = rotated_piece
-        elif key == "Space":
-            st.session_state.game_started = True
+    # Controls
+    if st.button("Start Game"):
+        st.session_state.game_started = True
 
     # Render grid
     temp_grid = [row[:] for row in st.session_state.grid]
@@ -138,22 +111,34 @@ def main():
 
     st.markdown(draw_grid(temp_grid), unsafe_allow_html=True)
 
-    # Add JavaScript for keypress events
-    html(
-        """
-        <script>
-        document.addEventListener('keydown', function(event) {
-            const key = event.key;
-            fetch('/?key=' + key, {method: 'POST'});
-        });
-        </script>
-        """,
-        height=0,
-    )
-
-    key_event = st.query_params.get("key", [None])[0]
-    if key_event:
-        handle_keypress(key_event)
+    # Handle manual controls (for now buttons instead of keys)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        if st.button("Left"):
+            new_position = [st.session_state.current_position[0], st.session_state.current_position[1] - 1]
+            if valid_move(st.session_state.grid, st.session_state.current_piece, new_position):
+                st.session_state.current_position = new_position
+    with col2:
+        if st.button("Down"):
+            new_position = [st.session_state.current_position[0] + 1, st.session_state.current_position[1]]
+            if valid_move(st.session_state.grid, st.session_state.current_piece, new_position):
+                st.session_state.current_position = new_position
+            else:
+                place_shape(st.session_state.grid, st.session_state.current_piece, st.session_state.current_position)
+                st.session_state.grid, cleared = clear_rows(st.session_state.grid)
+                st.session_state.score += cleared * 10
+                st.session_state.current_piece = random.choice(SHAPES)
+                st.session_state.current_position = [0, COLS // 2 - len(st.session_state.current_piece[0]) // 2]
+    with col3:
+        if st.button("Right"):
+            new_position = [st.session_state.current_position[0], st.session_state.current_position[1] + 1]
+            if valid_move(st.session_state.grid, st.session_state.current_piece, new_position):
+                st.session_state.current_position = new_position
+    with col4:
+        if st.button("Rotate"):
+            rotated_piece = rotate_shape(st.session_state.current_piece)
+            if valid_move(st.session_state.grid, rotated_piece, st.session_state.current_position):
+                st.session_state.current_piece = rotated_piece
 
     st.write(f"Score: {st.session_state.score}")
 
