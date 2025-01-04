@@ -126,7 +126,7 @@ def main():
             if valid_move(grid, rotated_piece, current_position):
                 st.session_state.current_piece = rotated_piece
         elif key == "Space":
-            st.session_state.game_started = not st.session_state.game_started
+            st.session_state.game_started = True
 
     # Render grid
     temp_grid = [row[:] for row in st.session_state.grid]
@@ -138,24 +138,24 @@ def main():
 
     st.markdown(draw_grid(temp_grid), unsafe_allow_html=True)
 
+    # Add JavaScript for keypress events
     html(
         """
         <script>
         document.addEventListener('keydown', function(event) {
-            var key = event.key;
-            var parent = window.parent;
-            parent.postMessage({key: key}, '*');
+            const key = event.key;
+            fetch('/?key=' + key, {method: 'POST'});
         });
         </script>
         """,
         height=0,
     )
 
-    st.write(f"Score: {st.session_state.score}")
-
-    key_event = st.query_params.get("key", [None])[0]
+    key_event = st.experimental_get_query_params().get("key", [None])[0]
     if key_event:
         handle_keypress(key_event)
+
+    st.write(f"Score: {st.session_state.score}")
 
 if __name__ == "__main__":
     main()
