@@ -75,9 +75,9 @@ def main():
         """
         ### How to Play
         - **Start**: Press any control button (Left, Down, Right) to start the game.
-        - **Move Left**: Click the "Left" button.
-        - **Move Down**: Click the "Down" button to speed up the block's fall.
-        - **Move Right**: Click the "Right" button.
+        - **Move Left**: Press the "Left" button.
+        - **Move Down**: Press the "Down" button to speed up the block's fall.
+        - **Move Right**: Press the "Right" button.
         - **Rotate**: Currently, rotation is not implemented. Future updates may include this feature.
         """
     )
@@ -97,10 +97,17 @@ def main():
     current_position = st.session_state.current_position
 
     # Render grid
-    st.markdown(draw_grid(grid), unsafe_allow_html=True)
+    temp_grid = [row[:] for row in grid]
+    for y, row in enumerate(current_piece):
+        for x, cell in enumerate(row):
+            if cell:
+                temp_grid[current_position[0] + y][current_position[1] + x] = cell
+
+    st.markdown(draw_grid(temp_grid), unsafe_allow_html=True)
 
     # Controls
-    col1, col2, col3 = st.columns(3)
+    st.write("**Controls:**")
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if st.button("Left"):
             new_position = [current_position[0], current_position[1] - 1]
@@ -122,16 +129,6 @@ def main():
             new_position = [current_position[0], current_position[1] + 1]
             if valid_move(grid, current_piece, new_position):
                 st.session_state.current_position = new_position
-
-    # Update piece position on grid
-    temp_grid = [row[:] for row in grid]
-    for y, row in enumerate(current_piece):
-        for x, cell in enumerate(row):
-            if cell:
-                temp_grid[current_position[0] + y][current_position[1] + x] = cell
-
-    # Render updated grid
-    st.markdown(draw_grid(temp_grid), unsafe_allow_html=True)
 
     st.write(f"Score: {st.session_state.score}")
 
