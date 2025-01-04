@@ -126,7 +126,7 @@ def main():
             if valid_move(grid, rotated_piece, current_position):
                 st.session_state.current_piece = rotated_piece
         elif key == "Space":
-            st.session_state.game_started = True
+            st.session_state.game_started = not st.session_state.game_started
 
     # Render grid
     temp_grid = [row[:] for row in st.session_state.grid]
